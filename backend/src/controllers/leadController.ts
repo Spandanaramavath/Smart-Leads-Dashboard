@@ -5,7 +5,6 @@ export const createLead = async (
   req: Request,
   res: Response
 ) => {
-
   try {
 
     const {
@@ -37,7 +36,6 @@ export const getLeads = async (
   req: Request,
   res: Response
 ) => {
-
   try {
 
     const page =
@@ -45,15 +43,21 @@ export const getLeads = async (
 
     const limit = 10;
 
-    const skip =
-      (page - 1) * limit;
+    const skip = (page - 1) * limit;
+
+    const total =
+      await Lead.countDocuments();
 
     const leads = await Lead.find()
-      .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-    res.status(200).json(leads);
+    res.status(200).json({
+      leads,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+    });
 
   } catch (error) {
 
@@ -68,7 +72,6 @@ export const updateLead = async (
   req: Request,
   res: Response
 ) => {
-
   try {
 
     const {
@@ -87,9 +90,7 @@ export const updateLead = async (
           status,
           source,
         },
-        {
-          new: true,
-        }
+        { new: true }
       );
 
     res.status(200).json(updatedLead);
@@ -107,7 +108,6 @@ export const deleteLead = async (
   req: Request,
   res: Response
 ) => {
-
   try {
 
     await Lead.findByIdAndDelete(
